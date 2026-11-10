@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission: Save Pixel the Bear! | Conditionals Demo Teaching</title>
+  <!-- Google Fonts: Fredoka & Nunito for playful modern 2D game look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;900&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #FFFDF9;
+      --card-bg: #FFFFFF;
+      --accent-purple: #6C5CE7;
+      --accent-blue: #0984E3;
+      --accent-yellow: #FDCB6E;
+      --accent-green: #00B894;
+      --accent-red: #D63031;
+      --accent-amber: #E17055;
+      --text-dark: #2D3436;
+      --text-muted: #636E72;
+      --border-dark: #2D3436;
+      --card-shadow: 0 10px 0 #2D3436;
+      --card-shadow-sm: 0 6px 0 #2D3436;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Fredoka', 'Nunito', cursive, sans-serif;
+      background-color: #2F3542;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--text-dark);
+    }
+
+    /* 16:9 Presentation Stage */
+    #stage-container {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      background: var(--bg-cream);
+      border-radius: 28px;
+      border: 6px solid var(--border-dark);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top XP Progress Header */
+    .top-header {
+      background: #FFFFFF;
+      border-bottom: 4px solid var(--border-dark);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .level-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .level-tag {
+      background: var(--accent-purple);
+      color: #FFFFFF;
+      font-weight: 900;
+      font-size: 14px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 3px solid var(--border-dark);
+      letter-spacing: 0.5px;
+      box-shadow: var(--card-shadow-sm);
+    }
+
+    .mission-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    /* XP Progress Dots */
+    .xp-tracker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .xp-step {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid var(--border-dark);
+      background: #E4E7EB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .xp-step.active {
+      background: var(--accent-yellow);
+      color: var(--border-dark);
+      transform: scale(1.15);
+      box-shadow: 0 4px 0 var(--border-dark);
+    }
+
+    .xp-step.completed {
+      background: var(--accent-green);
+      color: #FFFFFF;
+    }
+
+    /* Control Buttons (Notes, Sound, Fullscreen) */
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-tool {
+      background: #FFFFFF;
+      border: 3px solid var(--border-dark);
+      border-radius: 14px;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--card-shadow-sm);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .btn-tool:hover {
+      background: #F1F2F6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 var(--border-dark);
+    }
+
+    .btn-tool:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--border-dark);
+    }
+
+    /* Slide Slides Container */
+    .slide-viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 30px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.96) translateX(30px);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28), visibility 0.35s;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateX(0);
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      background: #FFFFFF;
+      border-top: 4px solid var(--border-dark);
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .teacher-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .teacher-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border-dark);
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slide-counter {
+      font-weight: 900;
+      font-size: 16px;
+      color: var(--border-dark);
+    }
+
+    .nav-btn {
+      background: var(--accent-yellow);
+      border: 3px solid var(--border-dark);
+      border-radius: 14px;
+      padding: 8px 20px;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-sm);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .nav-btn:hover {
+      background: #FFEAA7;
+      transform: translateY(-2px);
+    }
+
+    .nav-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--border-dark);
+    }
+
+    /* ==============================================================
+       SLIDE CONTENT STYLES
+       ============================================================== */
+    
+    /* Common Slide Title */
+    .slide-header-box {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .slide-main-title {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--text-dark);
+      line-height: 1.15;
+    }
+
+    .slide-subtitle {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent-purple);
+      margin-top: 4px;
+    }
+
+    /* SLIDE 1: WELCOME & BRAIN GAME */
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .mascot-card {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .mascot-img {
+      width: 140px;
+      height: 140px;
+      animation: float 3s ease-in-out infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    .mascot-speech {
+      background: #E8F0FE;
+      border: 3px solid var(--accent-blue);
+      border-radius: 16px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .brain-game-box {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .challenge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-amber);
+      color: #FFFFFF;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 12px;
+      border: 2px solid var(--border-dark);
+      width: fit-content;
+      font-size: 14px;
+    }
+
+    .reaction-item {
+      background: #F8F9FA;
+      border: 3px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reaction-item:hover {
+      background: #FFF3CD;
+      transform: translateX(6px);
+    }
+
+    .reaction-icon {
+      font-size: 32px;
+      background: #FFFFFF;
+      border: 2px solid var(--border-dark);
+      border-radius: 12px;
+      padding: 6px;
+    }
+
+    .reaction-text h4 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent-purple);
+    }
+
+    .reaction-text p {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    /* SLIDE 2: THE WEATHER TRAP */
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      flex: 1;
+      align-items: center;
+    }
+
+    .branch-card {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .branch-card.true-branch {
+      border-color: var(--accent-blue);
+    }
+
+    .branch-card.false-branch {
+      border-color: var(--accent-amber);
+    }
+
+    .branch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .branch-pill {
+      font-size: 16px;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 14px;
+      color: #FFFFFF;
+      border: 3px solid var(--border-dark);
+    }
+
+    .branch-pill.if { background: var(--accent-blue); }
+    .branch-pill.else { background: var(--accent-amber); }
+
+    .action-display {
+      background: #F1F2F6;
+      border: 3px dashed var(--border-dark);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .action-display img {
+      width: 70px;
+      height: 70px;
+    }
+
+    .action-text h5 {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-dark);
+    }
+
+    .action-text p {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* SLIDE 3: SCRATCH VISUAL LOGIC */
+    .scratch-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .scratch-container {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scratch-svg-box img {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.1));
+    }
+
+    .robot-scenario {
+      background: #E8F5E9;
+      border: 4px solid var(--accent-green);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .scenario-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dilemma-box {
+      background: #FFFFFF;
+      border: 3px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    /* SLIDE 4: INTERACTIVE CARD QUEST */
+    .cards-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quest-instruction {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent-purple);
+      text-align: center;
+    }
+
+    .cards-arena {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    /* 3D Flip Card Effect */
+    .flip-card {
+      background-color: transparent;
+      width: 170px;
+      height: 240px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      border: 4px solid var(--border-dark);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .flip-card-front {
+      background: #FFFFFF;
+    }
+
+    .flip-card-front img {
+      width: 120px;
+      height: auto;
+    }
+
+    .card-label {
+      margin-top: 8px;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--accent-purple);
+    }
+
+    .flip-card-back {
+      background: #FFF9E6;
+      transform: rotateY(180deg);
+      gap: 10px;
+    }
+
+    .flip-card-back img {
+      width: 110px;
+      height: auto;
+    }
+
+    .rule-result-badge {
+      font-size: 14px;
+      font-weight: 900;
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 2px solid var(--border-dark);
+      background: var(--accent-yellow);
+    }
+
+    /* SLIDE 5: MISSION RECAP & GOLD STARS */
+    .victory-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 32px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .trophy-showcase {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .trophy-showcase img {
+      width: 120px;
+      height: 120px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    .summary-card {
+      background: #FFFFFF;
+      border: 4px solid var(--border-dark);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .key-takeaway {
+      background: #F1F2F6;
+      border: 3px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .key-icon {
+      font-size: 28px;
+      background: var(--accent-yellow);
+      border: 2px solid var(--border-dark);
+      border-radius: 12px;
+      padding: 6px 10px;
+    }
+
+    .key-text h5 {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent-purple);
+    }
+
+    .key-text p {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .highfive-btn {
+      background: var(--accent-green);
+      color: #FFFFFF;
+      border: 3px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 12px;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: var(--card-shadow-sm);
+      text-align: center;
+      margin-top: 8px;
+      transition: all 0.1s;
+    }
+
+    .highfive-btn:hover {
+      background: #00A382;
+      transform: translateY(-2px);
+    }
+
+    /* ==============================================================
+       PRESENTER TELEPROMPTER DRAWER (HOTKEY 'S')
+       ============================================================== */
+    #notes-drawer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 440px;
+      background: #1E272E;
+      color: #F5F6FA;
+      border-left: 5px solid var(--border-dark);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    #notes-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #485460;
+      padding-bottom: 12px;
+    }
+
+    .drawer-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent-yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .close-drawer {
+      background: #485460;
+      border: none;
+      color: #FFFFFF;
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Stopwatch Widget */
+    .timer-widget {
+      background: #2C3A47;
+      border: 2px solid #485460;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timer-display {
+      font-family: monospace;
+      font-size: 26px;
+      font-weight: 900;
+      color: #00D2D3;
+    }
+
+    .timer-display.warning {
+      color: #FF5252;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.5; }
+    }
+
+    .timer-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .timer-btn {
+      background: #485460;
+      border: none;
+      color: #FFFFFF;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .timer-btn:hover { background: #576574; }
+
+    .notes-content-box {
+      flex: 1;
+      overflow-y: auto;
+      background: #2C3A47;
+      border-radius: 14px;
+      padding: 16px;
+      border: 2px solid #485460;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .cue-tag {
+      background: #575FCF;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spoken-script {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #D2DAE2;
+    }
+
+    .spoken-script strong {
+      color: #FFDA79;
+      font-weight: 800;
+    }
+
+    .teacher-action {
+      background: rgba(0, 184, 148, 0.15);
+      border-left: 3px solid var(--accent-green);
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #55EFC4;
+      border-radius: 0 8px 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Presentation Stage (1280x720) -->
+  <div id="stage-container">
+
+    <!-- Top Header: Level Progress & Tools -->
+    <header class="top-header">
+      <div class="level-badge">
+        <span class="level-tag" id="level-indicator">LEVEL 1 / 5</span>
+        <span class="mission-title" id="level-name">The Brain Code Game</span>
+      </div>
+
+      <!-- XP Tracker Dots -->
+      <div class="xp-tracker">
+        <div class="xp-step active" data-step="1">1</div>
+        <div class="xp-step" data-step="2">2</div>
+        <div class="xp-step" data-step="3">3</div>
+        <div class="xp-step" data-step="4">4</div>
+        <div class="xp-step" data-step="5">5</div>
+      </div>
+
+      <!-- Quick Action Tools -->
+      <div class="header-actions">
+        <button class="btn-tool" id="btn-sound" title="Toggle 8-bit sound effects (M)">
+          🔊 Sound: <span id="sound-status">ON</span>
+        </button>
+        <button class="btn-tool" id="btn-notes" title="Open Teacher Teleprompter (S)">
+          📝 Script (S)
+        </button>
+        <button class="btn-tool" id="btn-fullscreen" title="Toggle Fullscreen (F)">
+          ⛶ Full (F)
+        </button>
+      </div>
+    </header>
+
+    <!-- Slide Viewport -->
+    <main class="slide-viewport">
+
+      <!-- ==========================================
+           SLIDE 1: WELCOME & THE BRAIN CODE GAME
+           ========================================== -->
+      <section class="slide active" id="slide-1">
+        <div class="slide-header-box">
+          <h1 class="slide-main-title">What If...? The Secret Superpower of Coding! 🚀</h1>
+          <p class="slide-subtitle">Mission: Awaken Pixel the Bear's Decision Brain!</p>
+        </div>
+
+        <div class="hero-layout">
+          <!-- Left: Kenney Mascot Card -->
+          <div class="mascot-card">
+            <img src="./assets/kenney/bear.png" alt="Pixel the Bear" class="mascot-img">
+            <h3 style="font-size: 22px; font-weight: 900; color: var(--accent-purple);">Meet Pixel the Bear! 🐾</h3>
+            <div class="mascot-speech">
+              "Hi super-coders! Today I need your brain superpower to make decisions!"
+            </div>
+          </div>
+
+          <!-- Right: Brain Reaction Challenge -->
+          <div class="brain-game-box">
+            <div class="challenge-tag">🎮 QUICK WARM-UP GAME</div>
+            <div class="reaction-item" onclick="triggerReact(1)">
+              <div class="reaction-icon" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0;">
+                <!-- Cute 2D Flat Blue Shirt SVG -->
+                <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 6C17 10 31 10 34 6L44 14L38 20L34 16V42H14V16L10 20L4 14L14 6Z" fill="#0984E3" stroke="#2D3436" stroke-width="3" stroke-linejoin="round"/>
+                  <path d="M18 6C20 9 28 9 30 6" stroke="#2D3436" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="24" cy="22" r="3" fill="#FDCB6E" stroke="#2D3436" stroke-width="1.5"/>
+                </svg>
+              </div>
+              <div class="reaction-text">
+                <h4>IF you are wearing BLUE today...</h4>
+                <p>👉 <strong>Raise your hand!</strong> <em>(ELSE: Give a big wave! 👋)</em></p>
+              </div>
+            </div>
+
+            <div class="reaction-item" onclick="triggerReact(2)">
+              <div class="reaction-icon">🎮</div>
+              <div class="reaction-text">
+                <h4>IF you love Minecraft or Roblox...</h4>
+                <p>👉 <strong>Give me your biggest gamer smile! 😁</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 2: THE REAL-WORLD WEATHER TRAP
+           ========================================== -->
+      <section class="slide" id="slide-2">
+        <div class="slide-header-box">
+          <h1 class="slide-main-title">Real-Life Logic: The Weather Dilemma 🌦️</h1>
+          <p class="slide-subtitle">Computers make choices just like you do every morning!</p>
+        </div>
+
+        <div class="weather-grid">
+          <!-- IF Branch (Rainy) -->
+          <div class="branch-card true-branch">
+            <div class="branch-header">
+              <span class="branch-pill if">CONDITION: TRUE</span>
+              <span style="font-size: 32px;">🌧️</span>
+            </div>
+            <h3 style="font-size: 22px; font-weight: 900; color: var(--accent-blue);">
+              IF it is Raining outside...
+            </h3>
+            <div class="action-display">
+              <img src="./assets/kenney/panda.png" alt="Panda with Umbrella">
+              <div class="action-text">
+                <h5>THEN: Grab an Umbrella! ☂️</h5>
+                <p>Stay 100% dry and safe from the storm!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ELSE Branch (Sunny) -->
+          <div class="branch-card false-branch">
+            <div class="branch-header">
+              <span class="branch-pill else">CONDITION: FALSE</span>
+              <span style="font-size: 32px;">☀️</span>
+            </div>
+            <h3 style="font-size: 22px; font-weight: 900; color: var(--accent-amber);">
+              ELSE (It is Sunny)...
+            </h3>
+            <div class="action-display">
+              <img src="./assets/kenney/duck.png" alt="Sunny Duck">
+              <div class="action-text">
+                <h5>THEN: Wear Cool Sunglasses! 😎</h5>
+                <p>Enjoy the golden warm sunshine outside!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 3: SCRATCH VISUAL LOGIC
+           ========================================== -->
+      <section class="slide" id="slide-3">
+        <div class="slide-header-box">
+          <h1 class="slide-main-title">Connecting to Scratch: The Super-C Block 🧩</h1>
+          <p class="slide-subtitle">Let's give Pixel the Bear his walking and jumping code!</p>
+        </div>
+
+        <div class="scratch-layout">
+          <!-- Left: Scratch SVG Block -->
+          <div class="scratch-container">
+            <div class="scratch-svg-box">
+              <img src="./assets/scratch/scratch_if_else.svg" alt="Scratch IF-ELSE Block">
+            </div>
+          </div>
+
+          <!-- Right: The Dilemma & Solution -->
+          <div class="robot-scenario">
+            <div class="scenario-title">
+              <span>⚠️</span> The River Dilemma!
+            </div>
+            <div class="dilemma-box">
+              <strong>Question for Coders:</strong><br>
+              What happens if we forget the <code>ELSE</code> block when Pixel reaches the river?
+            </div>
+            <div class="dilemma-box" style="background: #E8F0FE; border-color: var(--accent-blue);">
+              <span style="font-size: 20px;">💡</span> <strong>The ELSE Hero:</strong><br>
+              Without <code>ELSE</code>, Pixel falls into the water! With <code>ELSE</code>, Pixel leaps over the river! 🚀
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 4: INTERACTIVE CARD QUEST
+           ========================================== -->
+      <section class="slide" id="slide-4">
+        <div class="slide-header-box">
+          <h1 class="slide-main-title">Interactive Challenge: The Mystery Cards! 🃏</h1>
+          <p class="slide-subtitle">Pick a card! Click to reveal the code rule inside!</p>
+        </div>
+
+        <div class="cards-layout">
+          <p class="quest-instruction">
+            👉 "Rule: <strong>IF Red Card</strong> ➔ Draw 2 Cards! <strong>ELSE</strong> ➔ Jump 3 Times!"
+          </p>
+
+          <div class="cards-arena">
+            <!-- Card 1 (Red Mystery) -->
+            <div class="flip-card" id="card-1" onclick="flipCard(1)">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <img src="./assets/kenney/card_back_red.png" alt="Mystery Red Card">
+                  <div class="card-label">CARD A (Click Me!)</div>
+                </div>
+                <div class="flip-card-back">
+                  <img src="./assets/kenney/card_hearts_9.png" alt="9 of Hearts">
+                  <div class="rule-result-badge">RED! Draw 2 🎴</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2 (Blue Mystery) -->
+            <div class="flip-card" id="card-2" onclick="flipCard(2)">
+              <div class="flip-card-inner">
+                <div class="flip-card-front">
+                  <img src="./assets/kenney/card_back_blue.png" alt="Mystery Blue Card">
+                  <div class="card-label">CARD B (Click Me!)</div>
+                </div>
+                <div class="flip-card-back">
+                  <img src="./assets/kenney/card_spades_7.png" alt="7 of Spades">
+                  <div class="rule-result-badge">BLUE! Jump 3x 🦘</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 5: MISSION ACCOMPLISHED & LEVEL UP
+           ========================================== -->
+      <section class="slide" id="slide-5">
+        <div class="slide-header-box">
+          <h1 class="slide-main-title">Mission Accomplished! You Are Master Coders! 🏆</h1>
+          <p class="slide-subtitle">Pixel the Bear is safe at home thanks to your IF-ELSE superpowers!</p>
+        </div>
+
+        <div class="victory-layout">
+          <!-- Left: Trophy & Gold Star -->
+          <div class="trophy-showcase">
+            <img src="./assets/kenney/star_gold.png" alt="Gold Star Badge">
+            <h3 style="font-size: 24px; font-weight: 900; color: var(--accent-purple);">LEVEL 5 UNLOCKED!</h3>
+            <p style="font-size: 15px; color: var(--text-muted);">Badge Awarded: Master of Decision Logic</p>
+          </div>
+
+          <!-- Right: 2 Golden Takeaways -->
+          <div class="summary-card">
+            <div class="key-takeaway">
+              <div class="key-icon">1️⃣</div>
+              <div class="key-text">
+                <h5>IF is the Question!</h5>
+                <p>Checks whether something is TRUE or FALSE.</p>
+              </div>
+            </div>
+
+            <div class="key-takeaway">
+              <div class="key-icon">2️⃣</div>
+              <div class="key-text">
+                <h5>ELSE is the Backup Plan!</h5>
+                <p>Tells the computer what to do when the condition is NOT met.</p>
+              </div>
+            </div>
+
+            <button class="highfive-btn" onclick="triggerConfetti()">
+              ✋ GIVE ME A VIRTUAL HIGH-FIVE! ✋
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <footer class="bottom-bar">
+      <div class="teacher-badge">
+        <img src="./assets/kenney/bear.png" class="teacher-avatar" alt="Avatar">
+        <span>Part-Time Programming Teacher Demo | Timedoor Academy</span>
+      </div>
+
+      <div class="nav-controls">
+        <button class="nav-btn" id="btn-prev" onclick="prevSlide()">◀ Back</button>
+        <span class="slide-counter" id="slide-counter">1 / 5</span>
+        <button class="nav-btn" id="btn-next" onclick="nextSlide()">Next ▶</button>
+      </div>
+    </footer>
+
+    <!-- Presenter Notes & Teleprompter Drawer (Toggle with 'S') -->
+    <aside id="notes-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span>🎙️</span> Teacher Teleprompter
+        </div>
+        <button class="close-drawer" onclick="toggleNotes()">✕</button>
+      </div>
+
+      <!-- Live 5:00 Stopwatch Timer -->
+      <div class="timer-widget">
+        <div>
+          <div style="font-size: 11px; text-transform: uppercase; color: #A4B0BE;">Timer (5:00 Target)</div>
+          <div class="timer-display" id="timer-display">05:00</div>
+        </div>
+        <div class="timer-btns">
+          <button class="timer-btn" id="btn-timer-start" onclick="toggleTimer()">Start</button>
+          <button class="timer-btn" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Spoken Script per Slide -->
+      <div class="notes-content-box" id="notes-body">
+        <!-- Injected via JavaScript based on active slide -->
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Interactive Audio & Presentation Logic -->
+  <script>
+    // Spoken scripts and teacher cues for all 5 slides
+    const scripts = {
+      1: {
+        cue: "Minute 00:00 - 01:00 | Energy: High & Warm",
+        script: `"Good afternoon, my awesome super-coders! How is everyone doing today? Awesome!<br><br>
+Today, we are on a secret gaming quest: <strong>Mission Save Pixel the Bear!</strong><br><br>
+Before we jump in, let's play a super quick brain game! Listen to my magical rules:<br>
+👉 <strong>IF</strong> you are wearing blue today... <em>raise your hand up high!</em> 🙋‍♂️<br>
+👉 <strong>ELSE</strong> (if you're not wearing blue like me!)... <em>give me a big friendly wave!</em> 👋<br>
+👉 And... <strong>IF</strong> you love playing Minecraft or Roblox... <em>give me your biggest gamer smile!</em> 😁<br><br>
+Do you know what just happened? Your brain just executed a secret superpower called <strong>CONDITIONALS!</strong>"`,
+        action: "Pause 2 seconds, smile, praise loudly: 'Awesome! Look at those waves and hands! That's IF and ELSE in action!'"
+      },
+      2: {
+        cue: "Minute 01:00 - 02:00 | Energy: Interactive & Real-life",
+        script: `"Now, how do computers and robots make decisions? They do it just like us!<br><br>
+Imagine looking outside your bedroom window in the morning:<br>
+👉 <strong>IF</strong> it is raining outside... what do you grab? That's right, an <strong>umbrella!</strong> ☂️<br>
+👉 <strong>ELSE</strong>... if it's sunny outside... what do you wear? Cool <strong>sunglasses!</strong> 😎<br><br>
+In coding, <strong>IF</strong> checks if something is TRUE. And <strong>ELSE</strong> is our superhero backup plan when it's FALSE!"`,
+        action: "Ask interviewer: 'What would happen if you wore sunglasses in the rain? Exactly, you'd get soaked!'"
+      },
+      3: {
+        cue: "Minute 02:00 - 03:15 | Energy: Curious & Instructive",
+        script: `"Now look at our magical coding canvas! In Scratch, this superpower looks like a giant hungry mouth — we call it the <strong>C-Block!</strong><br><br>
+Look at Pixel's code:<br>
+<code>when green flag clicked</code><br>
+<code>IF path ahead, THEN walk 10 steps!</code><br>
+<code>ELSE... JUMP over the river!</code> 🚀<br><br>
+Coders, what would happen if we FORGOT the <strong>ELSE</strong> block when Pixel reaches the river?<br>
+He would walk straight into the water! <em>Splash!</em><br>
+That's why <strong>ELSE</strong> is so important — it's the backup plan that saves our robot!"`,
+        action: "Use hand gestures to show walking and jumping. Point clearly to the yellow Scratch block."
+      },
+      4: {
+        cue: "Minute 03:15 - 04:15 | Energy: Playful & Gamified",
+        script: `"Time for our Mystery Card Challenge! Who wants to pick first?<br><br>
+Here is our code rule:<br>
+👉 <strong>IF</strong> the card is RED... you draw 2 cards!<br>
+👉 <strong>ELSE</strong> (if it's not red)... you have to do 3 super jumps! 🦘<br><br>
+Let's click Card A... look, it's <strong>RED!</strong> Condition is TRUE!<br>
+Now let's flip Card B... it's <strong>BLUE!</strong> Condition is FALSE, so we execute ELSE!"`,
+        action: "Click Card A and Card B on the screen so interviewer sees the cards flip with sound effect!"
+      },
+      5: {
+        cue: "Minute 04:15 - 05:00 | Energy: Victorious & Celebratory",
+        script: `"Look at that! We reached Level 5, and Pixel the Bear made it safely across the island!<br><br>
+Let's lock in our 2 golden superpowers today:<br>
+1️⃣ <strong>IF</strong> asks the question: Is this TRUE or FALSE?<br>
+2️⃣ <strong>ELSE</strong> is the hero backup plan: What to do when it's NOT true!<br><br>
+You all did an incredible job today! Can I get a virtual high-five on the camera? ✋ <em>BAM!</em><br>
+Thank you super-coders, see you on our next coding mission!"`,
+        action: "Reach hand close to the webcam for a virtual high-five, smile warmly, and conclude with confidence."
+      }
+    };
+
+    const levelNames = {
+      1: "The Brain Code Game",
+      2: "The Weather Trap",
+      3: "The Scratch Logic Bridge",
+      4: "Mystery Card Quest",
+      5: "Mission Accomplished!"
+    };
+
+    let currentSlide = 1;
+    const totalSlides = 5;
+    let isSoundOn = true;
+
+    // Web Audio API Synthesizer (Zero external dependencies!)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (!isSoundOn) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'coin') {
+          // Retro 8-bit coin sound
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(987.77, now); // B5
+          osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'flip') {
+          // Card swish pop
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'fanfare') {
+          // Level-up victory fanfare
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freq, now + idx * 0.1);
+            g.gain.setValueAtTime(0.18, now + idx * 0.1);
+            g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
+            o.start(now + idx * 0.1);
+            o.stop(now + idx * 0.1 + 0.3);
+          });
+        }
+      } catch (e) {
+        console.warn('AudioContext error:', e);
+      }
+    }
+
+    // Slide navigation
+    function updateSlide() {
+      // Update Slide visibility
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        s.classList.toggle('active', idx + 1 === currentSlide);
+      });
+
+      // Update XP Tracker
+      document.querySelectorAll('.xp-step').forEach((step, idx) => {
+        const stepNum = idx + 1;
+        step.classList.remove('active', 'completed');
+        if (stepNum === currentSlide) {
+          step.classList.add('active');
+        } else if (stepNum < currentSlide) {
+          step.classList.add('completed');
+        }
+      });
+
+      // Update Header Text
+      document.getElementById('level-indicator').innerText = `LEVEL ${currentSlide} / 5`;
+      document.getElementById('level-name').innerText = levelNames[currentSlide];
+      document.getElementById('slide-counter').innerText = `${currentSlide} / ${totalSlides}`;
+
+      // Update Teleprompter Notes
+      const notesBox = document.getElementById('notes-body');
+      const data = scripts[currentSlide];
+      notesBox.innerHTML = `
+        <div class="cue-tag">${data.cue}</div>
+        <div class="spoken-script">${data.script}</div>
+        <div class="teacher-action">👉 <strong>Teacher Cue:</strong> ${data.action}</div>
+      `;
+
+      playSound('coin');
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    // Interactive Card Flip
+    function flipCard(cardNum) {
+      const card = document.getElementById(`card-${cardNum}`);
+      card.classList.toggle('flipped');
+      playSound('flip');
+    }
+
+    function triggerReact(num) {
+      playSound('coin');
+    }
+
+    function triggerConfetti() {
+      playSound('fanfare');
+      alert("🎉 AWESOME VIRTUAL HIGH-FIVE! You nailed the 5-minute teaching test!");
+    }
+
+    // Sound toggle
+    document.getElementById('btn-sound').addEventListener('click', () => {
+      isSoundOn = !isSoundOn;
+      document.getElementById('sound-status').innerText = isSoundOn ? 'ON' : 'OFF';
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    });
+
+    // Notes drawer toggle
+    function toggleNotes() {
+      document.getElementById('notes-drawer').classList.toggle('open');
+    }
+    document.getElementById('btn-notes').addEventListener('click', toggleNotes);
+
+    // Fullscreen toggle
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key.toLowerCase() === 's') {
+        toggleNotes();
+      } else if (e.key.toLowerCase() === 'f') {
+        document.getElementById('btn-fullscreen').click();
+      } else if (e.key.toLowerCase() === 'm') {
+        document.getElementById('btn-sound').click();
+      }
+    });
+
+    // 5-Minute Stopwatch Timer Logic
+    let timerInterval = null;
+    let secondsLeft = 300; // 5 minutes
+    let isRunning = false;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('btn-timer-start');
+      const display = document.getElementById('timer-display');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        btn.innerText = 'Start';
+      } else {
+        isRunning = true;
+        btn.innerText = 'Pause';
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        timerInterval = setInterval(() => {
+          if (secondsLeft > 0) {
+            secondsLeft--;
+            display.innerText = formatTime(secondsLeft);
+            if (secondsLeft <= 60) {
+              display.classList.add('warning');
+            }
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            btn.innerText = 'Start';
+            playSound('fanfare');
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      secondsLeft = 300;
+      const display = document.getElementById('timer-display');
+      display.innerText = '05:00';
+      display.classList.remove('warning');
+      document.getElementById('btn-timer-start').innerText = 'Start';
+    }
+
+    // Initialize on load
+    updateSlide();
+  </script>
+</body>
+</html>
+
